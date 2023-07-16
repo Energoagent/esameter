@@ -4,13 +4,9 @@ import openpyxl
 LOGDATA = {}
 
 def BDC_Code(integer_input):
-    try:
-        integer_string=str(integer_input)
-        int_hex_input= int(integer_string, 16)  # Переводим из 16-ричной в десятичную
-        binary_output= bin(int_hex_input)[2:].zfill(len(integer_string.strip())*4)  # на каждую исходную цифру по 4 двоичных
-    except ValueError: pass
-#    except BaseException as e:
-#        print('EXCEPTION:', e)
+    integer_string=str(integer_input)
+    int_hex_input= int(integer_string, 16)  # Переводим из 16-ричной в десятичную
+    binary_output= bin(int_hex_input)[2:].zfill(len(integer_string.strip())*4)  # на каждую исходную цифру по 4 двоичных
     return(binary_output)
 
 def loaddata():
@@ -28,7 +24,7 @@ def loaddata():
                     databyte=bytearray(13)
                     portkey = str(row[0].value)
                     meterkey = str(row[1].value)
-                    databyte[0]= int(BDC_Code(row[1].value),2)      #MeterAdress
+                    databyte[0]= int(row[1].value)                   #MeterAdress
                     databyte[1]= int(BDC_Code(row[6].value),2)      #секунды до
                     databyte[2]= int(BDC_Code(row[5].value),2)      #минуты до
                     databyte[3]= int(BDC_Code(row[4].value),2)      #часы до
@@ -49,22 +45,8 @@ def loaddata():
                     else:
                         LOGDATA[portkey] = {meterkey: [databyte]}
                 except ValueError: pass
-#                    print(databyte)
-#                    print(portkey, meterkey)
-#                    for cell in row:
-#                        print('-----', cell.value)
-    return
 
 def GetMeterTimeJornal(socketNo,MeterAdress,RowNo):
     databyte = LOGDATA[str(socketNo)][str(MeterAdress)][RowNo]
     return databyte
 
-#loaddata()
-#print(LOGDATA)
-#for key, value in LOGDATA.items():
-#    for key2, value2 in LOGDATA[key].items():
-#        print('DATA:', key, key2)
-#        for a1 in value2:
-#            print('----------------', a1)
-#print(GetMeterTimeJornal(55011,33,5))
-#print(GetMeterTimeJornal(55005,35,5))
