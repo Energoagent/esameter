@@ -7,5 +7,5 @@ for key, value in meter_simulator.LOGDATA.items():
         print('DATA:', key, key2)
         for a1 in value2:
             print('----------------', a1)
-print(meter_simulator.GetMeterTimeJornal(55011,33,5))
+print(meter_simulator.GetMeterTimeJornal(55008,73,5))
 print(meter_simulator.GetMeterTimeJornal(55005,35,5))

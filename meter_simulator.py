@@ -41,10 +41,13 @@ def loaddata():
                         if meterkey in LOGDATA[portkey]:
                             LOGDATA[portkey][meterkey].append(databyte)
                         else:
-                            LOGDATA[portkey] = {meterkey: [databyte]}
+                            LOGDATA[portkey][meterkey] = [databyte]
                     else:
                         LOGDATA[portkey] = {meterkey: [databyte]}
-                except ValueError: pass
+                    if meterkey == 73:
+                        print('DATA:', LOGDATA[portkey][meterkey])
+                except ValueError as err: 
+                    print('ERR:', err)
 
 def GetMeterTimeJornal(socketNo,MeterAdress,RowNo):
     databyte = LOGDATA[str(socketNo)][str(MeterAdress)][RowNo]
