@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang='en' class=''>
+
+<head>
+
+  <meta charset='UTF-8'>
+  <title>vidjet timer</title>
+
+  
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+
+<style id="INLINE_PEN_STYLESHEET_ID">
+
+#app {
+  width: 260px;
+  margin: 10px;
+}
+.card-header-title {
+  justify-content: center;
+}
+.card-content {
+  padding: 4px 20px 8px;
+}
+.card-footer-item {
+  padding: 4px;
+}
+</style>
+
+
+</head>
+
+<body>
+  <div id="app">
+  <div class="card">
+    <header class="card-header has-background-grey-darker">
+      <p class="card-header-title has-text-success">COUNTDOWN TIMER</p>
+    </header>
+    <div class="card-image">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 260 250" width="260" height="250">
+        <rect x="5" y="5" width="250" height="250" fill="orangered" />
+        <circle cx="130" cy="125" r="80" stroke="lightsalmon" stroke-width="10" fill="none" />
+        <circle cx="130" cy="125" r="80" stroke="limegreen" :stroke-dasharray="dasharray" stroke-offset="600"
+        stroke-width="10" fill="none" transform="rotate(270,130,125)" />
+        <text x="84" y="140" fill="white" font-size="40">{{ minute | formatTime }}:{{ second | formatTime }}</text>
+      </svg>
+    </div>
+    <div class="card-content">
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label is-size-7">MINUTES:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input is-success is-small" :disabled="state==='started' || state==='paused'" @change="updateTime"
+                v-model="minute" type="number" name="minutes" min="0" max="59" step="1">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label is-size-7">SECONDS:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input is-success is-small" :disabled="state==='started' || state==='paused'" @change="updateTime"
+                v-model="second" type="number" name="seconds" min="0" max="59" step="1">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="card-footer">
+      <div class="buttons has-addons card-footer-item">
+        <button class="button is-success" :disabled="state==='started' || second==0 && minute==0" @click="start"><span>Start</span></button>
+        <button class="button is-success" :disabled="state!=='started'" @click="pause">Pause</button>
+        <button class="button is-success" :disabled="state!=='started' && state !== 'paused'" @click="stop">Stop</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
+
+<script>
+var app = new Vue({
+  el: '#app',
+  circumference: 2 * Math.PI * 80,
+  data: {
+    state: 'stopped',
+    minute: 0,
+    second: 0,
+    progress: 0,
+    timeInSeconds: 0
+  },
+  computed: {
+    dasharray(){
+      return this.progress + " " + this.$options.circumference
+    },
+  },
+  methods: {
+    updateTime(){
+      this.timeInSeconds = Number(this.minute) * 60 + Number(this.second)
+    },
+    start() {
+      this.state = "started";
+      if (this.progress == 0){
+        this.progress = this.$options.circumference;
+      }
+      this._tick();
+      this.interval = setInterval(this._tick, 1000);
+    },
+    pause() {
+      this.state = "paused";
+      clearInterval(this.interval);
+    },
+    stop() {
+      this.state = "stopped";
+      clearInterval(this.interval);
+      this.minute = 0;
+      this.second = 0;
+      this.progress = 0;
+    },
+    _tick: function() {
+      //if second is 0 and minute is 0, clear the interval
+      if (this.minute == 0 && this.second == 0){
+        this.stop()
+      }
+      //update progress
+      let delta = (this.$options.circumference / this.timeInSeconds)
+      if ((this.progress - delta) < (delta / 2)){
+        this.progress = 0
+      } else {
+        this.progress -= delta
+      }
+      //if second is not 0, just decrement second
+      if (this.second !== 0) {
+        this.second--;
+        return;
+      }
+      //if second is 0 and minute is not 0, decrement minute and set second to 59
+      if (this.minute !== 0) {
+        this.minute--;
+        this.second = 59;
+      }
+    }
+  },
+  filters: {
+    formatTime: function(value) {
+      if (value >= 10) {
+        return value;
+      }
+      return "0" + value;
+    }
+  }
+})
+</script>
+
+</body>
+
+</html>
