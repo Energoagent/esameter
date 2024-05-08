@@ -2,6 +2,8 @@ import os
 import openpyxl
     
 LOGDATA = {}
+COMMANDDATA = {}
+COMMANDDATA1 = {}
 
 def BDC_Code(integer_input):
     integer_string=str(integer_input)
@@ -21,9 +23,11 @@ def loaddata():
         else:
             for row in ws:
                 try:
+
                     databyte=bytearray(13)
                     portkey = str(row[0].value)
                     meterkey = str(row[1].value)
+                    
                     databyte[0]= int(row[1].value)                   #MeterAdress
                     databyte[1]= int(BDC_Code(row[6].value),2)      #секунды до
                     databyte[2]= int(BDC_Code(row[5].value),2)      #минуты до
@@ -39,17 +43,60 @@ def loaddata():
                     databyte[12]= int(BDC_Code(23),2)              #год        после коррекции
                     if portkey in LOGDATA:
                         if meterkey in LOGDATA[portkey]:
-                            LOGDATA[portkey][meterkey].append(databyte)
+                            RowNo=RowNo+1
+                            LOGDATA[portkey][meterkey][RowNo]=databyte
                         else:
-                            LOGDATA[portkey][meterkey] = [databyte]
+                            RowNo=0
+                            LOGDATA[portkey][meterkey] = {RowNo: databyte}
                     else:
-                        LOGDATA[portkey] = {meterkey: [databyte]}
-                    if meterkey == 73:
-                        print('DATA:', LOGDATA[portkey][meterkey])
+                        RowNo=0
+                        LOGDATA[portkey] = {meterkey:{RowNo: databyte}}
+                        
+#                    if meterkey == 165:
                 except ValueError as err: 
                     print('ERR:', err)
-
+            print('DATA:', LOGDATA)
 def GetMeterTimeJornal(socketNo,MeterAdress,RowNo):
+    print(socketNo,MeterAdress,RowNo)
     databyte = LOGDATA[str(socketNo)][str(MeterAdress)][RowNo]
     return databyte
+def LoadMeterCommand():
+    try:
+        wb = openpyxl.load_workbook('./logdata.xlsx')
+    except OSError as err:
+        print('ERROR:', err)
+    else: 
+        ws = wb['param']
+        if ws == None:
+            print('ERROR:', 'sheet none')
+        else:
+            for row in ws:
+                databyte=bytearray(20)
+                portkey = str(row[0].value)
+                meterkey = str(row[1].value)
+                command0 = str(row[2].value)
+                command1 = str(row[3].value)
+                databyte[0]= int(row[1].value)                   #MeterAdress
+                for l in range(1,int(row[4].value)+1):
+                    databyte[l]= int(row[l+4].value)
+                if portkey in COMMANDDATA:
+                    if meterkey in COMMANDDATA[portkey]:
+                        if command0 in COMMANDDATA[portkey][meterkey]:
+                            COMMANDDATA[portkey][meterkey][command0][command1]=databyte[0:int(row[4].value)+1]
+                        else:
+                            COMMANDDATA[portkey][meterkey][command0] = {command1:databyte[0:int(row[4].value)+1]}
+                    else:
+                        COMMANDDATA[portkey][meterkey] = {command0:{command1:databyte[0:int(row[4].value)+1]}}
+                else:
+                    COMMANDDATA[portkey] = {meterkey: {command0:{command1:databyte[0:int(row[4].value)+1]}}}
+                    
+        print('COMMANDDATA:', COMMANDDATA)
+def GetMeterAnswer(socketNo,MeterAdress,command0,command1):
+    if(int(command0)==0 or int(command0)==1):
+        command1=0
+    print("GetFuckMeterAnswer",str(socketNo),str(MeterAdress),str(command0),str(command1))
+    databyte = COMMANDDATA[str(socketNo)][str(MeterAdress)][str(command0)][str(command1)]
+    print("GetFuckMeterAnswer",databyte)
+    return databyte
+
 
